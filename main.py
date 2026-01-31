@@ -70,12 +70,17 @@ def get_tts_instance():
             tts_base_path = os.getenv("TTS_BASE_PATH")
             if not tts_base_path:
                 # Default to project root (where main.py is located)
-                tts_base_path = str(Path(__file__).parent)
+                tts_base_path = str(Path(__file__).parent.absolute())
                 # Set it in environment for this process
                 os.environ["TTS_BASE_PATH"] = tts_base_path
             
             # Add TTS module to path - need both tts_dir and GPT_SoVITS for relative imports
             tts_dir = Path(tts_base_path) / "tts-feature-architecture"
+            tts_dir = tts_dir.resolve()  # Resolve to absolute path
+            
+            logger.info(f"TTS base path: {tts_base_path}")
+            logger.info(f"TTS dir: {tts_dir}")
+            logger.info(f"TTS dir exists: {tts_dir.exists()}")
             if tts_dir.exists():
                 # Change to tts_dir so that os.getcwd() in sv.py works correctly
                 try:
@@ -94,14 +99,28 @@ def get_tts_instance():
                     from inference import ChineseTTS
                     import torch
                     
-                    # TTS configuration paths
-                    gpt_path = tts_dir / "models" / "gpt_weights.ckpt"
-                    sovits_path = tts_dir / "models" / "sovits_weights.pth"
-                    ref_audio_path = tts_dir / "reference.wav"
-                    prompt_semantic_cache = tts_dir / "reference_semantic.pt"
+                    # TTS configuration paths (use absolute paths)
+                    gpt_path = (tts_dir / "models" / "gpt_weights.ckpt").resolve()
+                    sovits_path = (tts_dir / "models" / "sovits_weights.pth").resolve()
+                    ref_audio_path = (tts_dir / "reference.wav").resolve()
+                    prompt_semantic_cache = (tts_dir / "reference_semantic.pt").resolve()
+                    
+                    logger.info(f"Checking model files:")
+                    logger.info(f"  GPT: {gpt_path.exists()} - {gpt_path}")
+                    logger.info(f"  SoVITS: {sovits_path.exists()} - {sovits_path}")
+                    logger.info(f"  Reference audio: {ref_audio_path.exists()} - {ref_audio_path}")
+                    logger.info(f"  Prompt semantic: {prompt_semantic_cache.exists()} - {prompt_semantic_cache}")
                     
                     if not gpt_path.exists() or not sovits_path.exists() or not ref_audio_path.exists():
-                        logger.warning("TTS models not found. TTS functionality will be disabled.")
+                        missing_files = []
+                        if not gpt_path.exists():
+                            missing_files.append(f"GPT model: {gpt_path}")
+                        if not sovits_path.exists():
+                            missing_files.append(f"SoVITS model: {sovits_path}")
+                        if not ref_audio_path.exists():
+                            missing_files.append(f"Reference audio: {ref_audio_path}")
+                        logger.warning(f"TTS models not found. Missing: {', '.join(missing_files)}")
+                        logger.warning(f"TTS functionality will be disabled.")
                         _tts_instance = None
                         _tts_lock = False
                         os.chdir(original_cwd)
@@ -148,7 +167,8 @@ def get_tts_instance():
         except Exception as e:
             logger.error(f"Failed to initialize TTS: {e}")
             import traceback
-            logger.error(traceback.format_exc())
+            error_trace = traceback.format_exc()
+            logger.error(f"TTS initialization traceback:\n{error_trace}")
             _tts_instance = None
             # Make sure to restore cwd even on error
             try:

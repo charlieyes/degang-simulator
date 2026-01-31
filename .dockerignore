@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Output folder (TTS generated audio files - don't need in image)
+output/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+Prompts/
+
+# Deployment config (not needed in container)
+deploy-config.json
+
+# Test files
+test_*.py

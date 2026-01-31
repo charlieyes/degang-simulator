@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files (if any)
+test_*.py
+
+# Output folder (TTS generated audio files)
+output/
+
+# Large model files (>100MB) - excluded from git
+*.ckpt
+*.pth
+*.pt
+*.onnx
+*.bin
+*.zip
+# Specific large files
+**/G2PWModel_1.1.zip
+**/g2pW.onnx
+**/pytorch_model.bin
+**/lid.176.bin
+**/pretrained_eres2netv2w24s4ep4.ckpt
+**/gpt_weights.ckpt
+**/sovits_weights.pth
+reference.wav
+reference_semantic.pt
