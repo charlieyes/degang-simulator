@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>郭德纲给你讲故事</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="chat-header">
+                <h1>郭德纲给你讲故事</h1>
+                <p>让AI化身段子手，给你讲个小故事</p>
+                <div class="header-tabs">
+                    <button class="tab-btn active" id="articleTabBtn" onclick="switchTab('article')">让郭德纲讲段子</button>
+                    <button class="tab-btn" id="ttsTabBtn" onclick="switchTab('tts')">让郭德纲读给你听</button>
+                </div>
+            </div>
+
+            <!-- Article Generation Tab Content -->
+            <div class="tab-content active" id="articleTab">
+                <div class="article-container">
+                    <div class="article-header">
+                        <h2>让郭德纲给你讲段子</h2>
+                        <p>告诉AI你想听什么，它就会给你讲个小故事，还能用声音读出来</p>
+                    </div>
+                    
+                    <!-- Step 1: Prompt Input -->
+                    <div class="article-step" id="step1Section">
+                        <h3>第一步：你想听什么？</h3>
+                        <div class="article-input-section">
+                            <textarea 
+                                id="articlePromptInput" 
+                                placeholder="比如：给我讲个笑话"
+                                rows="4"
+                                required
+                            ></textarea>
+                            <div class="article-controls">
+                                <button id="generateArticleBtn" class="article-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                    开始创作
+                                </button>
+                                <button id="generateJokeBtn" class="article-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 10h.01M15 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path>
+                                    </svg>
+                                    来个段子
+                                </button>
+                                <button id="generateStoryBtn" class="article-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                        <path d="M6.5 17H20v-13H6.5A2.5 2.5 0 0 0 4 6.5v11z"></path>
+                                    </svg>
+                                    来个故事
+                                </button>
+                                <button id="generatePoemBtn" class="article-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                        <path d="M6.5 17H20v-13H6.5A2.5 2.5 0 0 0 4 6.5v11z"></path>
+                                    </svg>
+                                    来首诗
+                                </button>
+                            </div>
+                            <div class="article-status" id="articleStatus"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Generated Article -->
+                    <div class="article-step" id="step2Section" style="display: none;">
+                        <h3>第二步：郭德纲给你讲的故事</h3>
+                        <div class="article-output-section">
+                            <div class="article-text" id="articleText"></div>
+                            <div class="article-actions">
+                                <button id="regenerateArticleBtn" class="article-btn secondary">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <polyline points="1 20 1 14 7 14"></polyline>
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                    </svg>
+                                    换个故事
+                                </button>
+                                <button id="copyArticleBtn" class="article-btn secondary">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    复制文本
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Audio Generation (auto-triggered) -->
+                    <div class="article-step" id="step3Section" style="display: none;">
+                        <h3>第三步：让AI用声音读给你听</h3>
+                        <div class="article-audio-section">
+                            <div class="article-audio-status" id="articleAudioStatus"></div>
+                            <div class="article-audio-output" id="articleAudioOutput" style="display: none;">
+                                <div class="audio-player-container">
+                                    <audio id="articleAudioPlayer" controls style="width: 100%;">
+                                        您的浏览器不支持音频播放。
+                                    </audio>
+                                </div>
+                                <div class="audio-info" id="articleAudioInfo"></div>
+                                <div class="audio-actions">
+                                    <a id="articleDownloadAudioBtn" class="download-btn" download>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                        保存音频
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TTS Tab Content -->
+            <div class="tab-content" id="ttsTab">
+                <div class="tts-container">
+                    <div class="tts-header">
+                        <h2>让郭德纲读给你听</h2>
+                        <p>把你想说的话写下来，让AI用郭德纲的声音读给你听</p>
+                    </div>
+                    
+                    <div class="tts-input-section">
+                        <textarea 
+                            id="ttsTextInput" 
+                            placeholder="想说什么就写什么，比如：今天天气真好..."
+                            rows="6"
+                            required
+                        ></textarea>
+                        <div class="tts-controls">
+                            <button id="generateTTSBtn" class="tts-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                开始朗读
+                            </button>
+                            <div class="tts-status" id="ttsStatus"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tts-output-section" id="ttsOutputSection" style="display: none;">
+                        <h3>AI给你读的声音</h3>
+                        <div class="audio-player-container">
+                            <audio id="ttsAudioPlayer" controls style="width: 100%;">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                        <div class="audio-info" id="audioInfo"></div>
+                        <div class="audio-actions">
+                            <a id="downloadAudioBtn" class="download-btn" download>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                保存音频
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
