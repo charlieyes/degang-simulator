@@ -1,11 +1,11 @@
-# Degang Simulator
+# Solo Crosstalk Simulator
 
-AI-powered Chinese text-to-speech application featuring Guo Degang's voice simulation.
+AI-powered Chinese text-to-speech application for generating solo crosstalk (单口相声) style content and audio.
 
 ## Features
 
 - **AI Chat**: Interactive chat with web search and page reading capabilities
-- **Text-to-Speech**: Generate audio using Chinese TTS with Guo Degang's voice
+- **Text-to-Speech**: Generate audio using Chinese TTS with solo crosstalk style voice
 - **Story Generation**: Create stories, jokes, and poems with AI assistance
 
 ## Setup
