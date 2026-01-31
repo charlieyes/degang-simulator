@@ -33,6 +33,9 @@ test_*.py
 # Output folder (TTS generated audio files)
 output/
 
+# Documentation/Prompts
+Prompts/deployment-prompt.md
+
 # Large model files (>100MB) - excluded from git
 *.ckpt
 *.pth
