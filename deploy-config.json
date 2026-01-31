@@ -1,0 +1,7 @@
+{
+  "repo_url": "https://github.com/charlieyes/degang-simulator",
+  "service_name": "degang-simulator",
+  "branch": "main",
+  "port": 8000,
+  "note": "AI_BUILDER_TOKEN is automatically injected by the platform, no need to include it in env_vars"
+}
