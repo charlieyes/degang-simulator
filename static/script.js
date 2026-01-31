@@ -30,15 +30,87 @@ const downloadAudioBtn = document.getElementById('downloadAudioBtn');
 
 // Store generated article text for TTS
 let generatedArticleText = '';
+let ttsAvailable = false;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Auto-resize textarea
     articlePromptInput.addEventListener('input', () => {
         articlePromptInput.style.height = 'auto';
         articlePromptInput.style.height = Math.min(articlePromptInput.scrollHeight, 120) + 'px';
     });
+    
+    // Check TTS availability
+    await checkTTSAvailability();
 });
+
+// Check if TTS is available
+async function checkTTSAvailability() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/tts/status`);
+        const data = await response.json();
+        
+        ttsAvailable = data.available;
+        
+        if (!ttsAvailable) {
+            // Disable TTS features
+            disableTTSFeatures(data);
+        }
+    } catch (error) {
+        console.error('Failed to check TTS status:', error);
+        // Assume TTS is unavailable if check fails
+        disableTTSFeatures({
+            message: 'Unable to check TTS status',
+            note: 'Due to Docker image size limitations, TTS model files may not be included. Audio generation feature is disabled.'
+        });
+    }
+}
+
+// Disable TTS features when models are not available
+function disableTTSFeatures(statusData) {
+    // Disable TTS tab button
+    const ttsTabBtn = document.getElementById('ttsTabBtn');
+    if (ttsTabBtn) {
+        ttsTabBtn.disabled = true;
+        ttsTabBtn.style.opacity = '0.5';
+        ttsTabBtn.style.cursor = 'not-allowed';
+        ttsTabBtn.title = statusData.note || 'TTS功能不可用';
+    }
+    
+    // Disable TTS generate button
+    if (generateTTSBtn) {
+        generateTTSBtn.disabled = true;
+        generateTTSBtn.style.opacity = '0.5';
+        generateTTSBtn.style.cursor = 'not-allowed';
+    }
+    
+    // Hide or disable audio generation in article tab
+    const step3Section = document.getElementById('step3Section');
+    if (step3Section) {
+        // We'll hide it initially, but show a message if article is generated
+        step3Section.style.display = 'none';
+    }
+    
+    // Add a notice in the TTS tab
+    const ttsTab = document.getElementById('ttsTab');
+    if (ttsTab) {
+        const notice = document.createElement('div');
+        notice.className = 'tts-unavailable-notice';
+        notice.style.cssText = `
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            color: #856404;
+        `;
+        notice.innerHTML = `
+            <strong>⚠️ 音频生成功能不可用</strong><br>
+            ${statusData.note || 'TTS模型文件未找到，音频生成功能已禁用。'}
+        `;
+        ttsTab.insertBefore(notice, ttsTab.firstChild);
+    }
+}
 
 // ============================================================================
 // Article Generation Functions
@@ -64,7 +136,7 @@ async function generateArticleWithPrompt(promptText) {
     // Status messages that rotate
     let statusIndex = 0;
     const statusMessages = [
-        '郭德纲正在思考...',
+        'AI正在思考...',
         '正在组织语言...',
         '正在编段子...',
         '正在打磨笑点...',
@@ -119,8 +191,16 @@ async function generateArticleWithPrompt(promptText) {
         articleStatus.textContent = `故事讲完了！ (用了 ${seconds}秒)`;
         articleStatus.className = 'article-status success';
         
-        // Auto-trigger TTS generation
-        await generateAudioFromArticle(article);
+        // Auto-trigger TTS generation only if available
+        if (ttsAvailable) {
+            await generateAudioFromArticle(article);
+        } else {
+            // Show message that TTS is not available
+            step3Section.style.display = 'block';
+            articleAudioStatus.className = 'article-audio-status error';
+            articleAudioStatus.textContent = '⚠️ 音频生成功能不可用：由于Docker镜像大小限制，TTS模型文件未包含在部署中。';
+            articleAudioOutput.style.display = 'none';
+        }
         
     } catch (error) {
         // Clear intervals on error
@@ -194,7 +274,7 @@ generateArticleBtn.addEventListener('click', async () => {
     // Status messages that rotate
     let statusIndex = 0;
     const statusMessages = [
-        '郭德纲正在思考...',
+        'AI正在思考...',
         '正在组织语言...',
         '正在编段子...',
         '正在打磨笑点...',
@@ -245,8 +325,16 @@ generateArticleBtn.addEventListener('click', async () => {
         articleStatus.textContent = `文章生成成功！ (耗时 ${seconds}秒)`;
         articleStatus.className = 'article-status success';
         
-        // Auto-trigger TTS generation
-        await generateAudioFromArticle(article);
+        // Auto-trigger TTS generation only if available
+        if (ttsAvailable) {
+            await generateAudioFromArticle(article);
+        } else {
+            // Show message that TTS is not available
+            step3Section.style.display = 'block';
+            articleAudioStatus.className = 'article-audio-status error';
+            articleAudioStatus.textContent = '⚠️ 音频生成功能不可用：由于Docker镜像大小限制，TTS模型文件未包含在部署中。';
+            articleAudioOutput.style.display = 'none';
+        }
         
     } catch (error) {
         // Clear intervals on error
@@ -283,6 +371,14 @@ copyArticleBtn.addEventListener('click', () => {
 
 // Generate audio from article (auto-triggered)
 async function generateAudioFromArticle(text) {
+    // Check TTS availability before generating
+    if (!ttsAvailable) {
+        step3Section.style.display = 'block';
+        articleAudioStatus.className = 'article-audio-status error';
+        articleAudioStatus.textContent = '⚠️ 音频生成功能不可用：由于Docker镜像大小限制，TTS模型文件未包含在部署中。';
+        articleAudioOutput.style.display = 'none';
+        return;
+    }
     // Show step 3
     step3Section.style.display = 'block';
     articleAudioStatus.className = 'article-audio-status loading';
@@ -384,6 +480,12 @@ async function generateAudioFromArticle(text) {
 
 // Switch between tabs
 function switchTab(tabName) {
+    // Prevent switching to TTS tab if TTS is not available
+    if (tabName === 'tts' && !ttsAvailable) {
+        alert('⚠️ 音频生成功能不可用：由于Docker镜像大小限制，TTS模型文件未包含在部署中。');
+        return;
+    }
+    
     // Update tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     if (tabName === 'article') {
@@ -403,6 +505,13 @@ function switchTab(tabName) {
 
 // Generate TTS audio
 generateTTSBtn.addEventListener('click', async () => {
+    // Check TTS availability
+    if (!ttsAvailable) {
+        ttsStatus.textContent = '⚠️ 音频生成功能不可用：由于Docker镜像大小限制，TTS模型文件未包含在部署中。';
+        ttsStatus.className = 'tts-status error';
+        return;
+    }
+    
     const text = ttsTextInput.value.trim();
     
     if (!text) {
