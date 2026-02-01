@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:8000';
+// Use relative URLs for API calls (works for both localhost and deployed)
+const API_BASE_URL = '';
 
 // DOM Elements - Article Generation
 const generateJokeBtn = document.getElementById('generateJokeBtn');
