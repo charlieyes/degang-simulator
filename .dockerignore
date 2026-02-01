@@ -43,3 +43,10 @@ deploy-config.json
 
 # Test files
 test_*.py
+
+# TTS models (if not needed at build time, download at runtime)
+tts-feature-architecture/models/
+*.ckpt
+*.pth
+*.wav
+*.pt
