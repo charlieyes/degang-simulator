@@ -2,17 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies for TTS (ffmpeg, etc.)
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
-
 # Install Python dependencies
-# Use CPU-only PyTorch to reduce image size significantly (saves ~2GB)
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir $(grep -v "^torch" requirements.txt | grep -v "^torchaudio") && \
+    pip install --no-cache-dir -r requirements.txt && \
     pip cache purge && \
     rm -rf /root/.cache/pip /tmp/*
 
